@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class HelloTraceV1 {
+public class HelloTraceV2 {
 
     private static final String START_PREFIX = "-->";
     private static final String COMPLETE_PREFIX = "<--";
@@ -18,6 +18,14 @@ public class HelloTraceV1 {
         Long startTimeMs = System.currentTimeMillis();
         log.info("[{}] {}{}", traceId.getId(), addSpace(START_PREFIX, traceId.getLevel()), message);
         return new TraceStatus(traceId, startTimeMs, message);
+    }
+
+    //v2에서 추가
+    public TraceStatus beginSync(TraceId beforeTraceId, String message) {
+        TraceId nextId = beforeTraceId.createNextId();
+        Long startTimeMs = System.currentTimeMillis();
+        log.info("[{}] {}{}", nextId.getId(), addSpace(START_PREFIX, nextId.getLevel()), message);
+        return new TraceStatus(nextId, startTimeMs, message);
     }
 
     public void end(TraceStatus status) {
@@ -33,11 +41,9 @@ public class HelloTraceV1 {
         long resultTimeMs = stopTimeMs - status.getStartTimeMs();
         TraceId traceId = status.getTraceId();
         if (e == null) {
-            log.info("[{}] {}{} time={}ms", traceId.getId(),
-                    addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs);
+            log.info("[{}] {}{} time={}ms", traceId.getId(), addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs);
         } else {
-            log.info("[{}] {}{} time={}ms ex={}", traceId.getId(),
-                    addSpace(EX_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs, e.toString());
+            log.info("[{}] {}{} time={}ms ex={}", traceId.getId(), addSpace(EX_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs, e.toString());
         }
     }
 
